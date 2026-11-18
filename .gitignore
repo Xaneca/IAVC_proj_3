@@ -1,0 +1,16 @@
+# Dados, pesos e dados biométricos nunca vão para o repositório
+data/*
+!data/.gitkeep
+models/*
+!models/.gitkeep
+gallery/*
+!gallery/.gitkeep
+
+# Os splits são pequenos e garantem a reprodutibilidade
+!data/splits/
+
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+.DS_Store
