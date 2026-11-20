@@ -81,3 +81,9 @@ python -m eval.eval_expression        # (e restantes scripts de eval/)
 ## Limitações conhecidas
 
 _A preencher._
+
+## Dados
+
+- UTKFace (Aligned and Cropped): https://www.kaggle.com/datasets/moritzm00/utkface-cropped?resource=download
+
+- WIDER Face (test): http://shuoyang1213.me/WIDERFACE/

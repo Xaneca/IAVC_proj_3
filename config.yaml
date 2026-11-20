@@ -23,3 +23,10 @@ modules:
   age_gender: true
   expression: true
   identity: true
+
+data:
+  age_gender:
+    path: data/UTKFace/UTKFace
+    script: scripts/prepare_utkface.py
+  expression: data/AffectNET/AffectNetCustom
+  detection: data/WIDERFACE/WIDER_test/images
