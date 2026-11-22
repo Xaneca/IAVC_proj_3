@@ -1,0 +1,16 @@
+dataset,source_label,label
+affectnet,0,neutral
+affectnet,1,happy
+affectnet,2,sad
+affectnet,3,surprise
+affectnet,4,fear
+affectnet,5,disgust
+affectnet,6,anger
+affectnet,7,
+btfer7,Angry,anger
+btfer7,Disgust,disgust
+btfer7,Fear,fear
+btfer7,Happy,happy
+btfer7,Neutral,neutral
+btfer7,Sad,sad
+btfer7,Surprise,surprise
