@@ -6,12 +6,21 @@ import cv2
 GREEN, ORANGE, WHITE = (0, 200, 0), (0, 165, 255), (255, 255, 255)
 
 
+def draw_detection(frame, detection, color=ORANGE) -> None:
+    x1, y1, x2, y2 = detection.bbox.astype(int)
+    cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+    cv2.putText(frame, f"{detection.score:.2f}", (max(x1, 0), max(y1 + 16, 16)),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
+    for x, y in detection.landmarks.astype(int):
+        cv2.circle(frame, (x, y), 2, GREEN, -1, cv2.LINE_AA)
+
+
 def draw(frame, results, fps: float, modules: dict) -> None:
     for r in results:
-        x1, y1, x2, y2 = r.detection.bbox.astype(int)
+        x1, y1 = r.detection.bbox[:2].astype(int)
         known = r.identity not in (None, "Unknown")
         color = GREEN if known else ORANGE
-        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+        draw_detection(frame, r.detection, color)
 
         lines = [r.identity or ""] + r.labels
         for i, text in enumerate(l for l in lines if l):
