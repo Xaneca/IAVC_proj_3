@@ -25,10 +25,10 @@ class FaceCrop:
 def align_face(image: np.ndarray, landmarks5: np.ndarray, size: int = CROP_SIZE) -> np.ndarray:
     """Devolve um crop BGR no template ArcFace, escalado para 112 ou 224 px."""
     if size not in (112, 224):
-        raise ValueError("size deve ser 112 ou 224")
+        raise ValueError("size must be 112 or 224")
     points = np.asarray(landmarks5, dtype=np.float32)
     if points.shape != (5, 2) or not np.isfinite(points).all():
-        raise ValueError("São esperados cinco landmarks finitos com duas coordenadas")
+        raise ValueError("Expected five finite landmarks with two coordinates")
     return norm_crop(image, points, image_size=size)
 
 
@@ -56,7 +56,7 @@ def align_faces(image: np.ndarray, detections: list[Detection],
                 size: int = CROP_SIZE) -> list[FaceCrop]:
     """Devolve um resultado por deteção, na mesma ordem."""
     if size not in (112, 224):
-        raise ValueError("size deve ser 112 ou 224")
+        raise ValueError("size must be 112 or 224")
     results = []
     for detection in detections:
         visible = _visible(detection)
@@ -79,9 +79,9 @@ def detect_and_align(image: np.ndarray, size: int, pick: str = "largest",
                      *, detector: FaceDetector | None = None) -> FaceCrop | None:
     """Seleciona a maior face analisável. Sem faces visíveis, devolve None."""
     if pick != "largest":
-        raise ValueError("pick deve ser 'largest'")
+        raise ValueError("pick must be 'largest'")
     if size not in (112, 224):
-        raise ValueError("size deve ser 112 ou 224")
+        raise ValueError("size must be 112 or 224")
     detector = _default_detector() if detector is None else detector
     visible = (d for d in detector.detect(image) if _visible(d))
     selected = max(visible, key=lambda d: (d.bbox[2] - d.bbox[0]) * (d.bbox[3] - d.bbox[1]),
