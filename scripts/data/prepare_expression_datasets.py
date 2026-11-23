@@ -428,11 +428,37 @@ def prepare(roots, indexes, review_path, output):
             (stage / path.name).replace(path)
 
 
+def export_local_splits(roots):
+    """Organiza os manifestos existentes ao lado das imagens extraídas."""
+    exports = {}
+    fields = ("path", "label", "split")
+    for dataset, root in roots.items():
+        manifest = REPO / "data/splits" / f"{dataset}.csv"
+        with manifest.open(encoding="utf-8", newline="") as stream:
+            rows = [tuple(row[field] for field in fields) for row in csv.DictReader(stream)]
+        for path, _, split in rows:
+            relative = Path(path)
+            if relative.anchor or ".." in relative.parts or not (root / relative).is_file():
+                raise ValueError(f"{dataset}: imagem em falta ou caminho inválido: {path}")
+            if split not in SPLITS[dataset]:
+                raise ValueError(f"{dataset}: split inesperado: {split}")
+        exports[dataset] = rows
+    for dataset, rows in exports.items():
+        root = roots[dataset]
+        write_csv(root / "all_labels.csv", fields, rows)
+        for split in SPLITS[dataset]:
+            write_csv(root / f"{split}_labels.csv", fields,
+                      (row for row in rows if row[2] == split))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     inspect = commands.add_parser("inspect")
     inspect.add_argument("root", type=Path)
+    local = commands.add_parser("setup-local", help="Exportar os splits junto das imagens extraídas")
+    local.add_argument("--affectnet-root", type=Path, default=REPO / "data/AffectNET")
+    local.add_argument("--btfer7-root", type=Path, default=REPO / "data/BTFER7")
     preview = commands.add_parser("preliminary")
     for dataset in SPLITS:
         preview.add_argument(f"--{dataset}-zip", type=Path, required=True)
@@ -452,6 +478,8 @@ def main():
             writer.writerow(("path", "kind"))
             writer.writerows((path, "image" if is_image else "metadata_or_other")
                              for path, is_image in inventory(args.root.resolve()))
+        elif args.command == "setup-local":
+            export_local_splits({ds: getattr(args, f"{ds}_root").resolve() for ds in SPLITS})
         elif args.command == "preliminary":
             archives = {ds: getattr(args, f"{ds}_zip") for ds in SPLITS}
             preliminary(archives, args.output, clean=args.clean)
