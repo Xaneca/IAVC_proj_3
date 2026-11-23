@@ -1,0 +1,5 @@
+model,input_size,provider,frames,mean_ms,median_ms,p95_ms
+det_10g.onnx,320,CPUExecutionProvider,30,51.176,51.438,53.956
+det_10g.onnx,640,CPUExecutionProvider,30,203.341,202.977,213.508
+det_500m.onnx,320,CPUExecutionProvider,30,7.913,7.682,9.836
+det_500m.onnx,640,CPUExecutionProvider,30,28.209,27.926,32.417
