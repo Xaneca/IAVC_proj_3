@@ -54,7 +54,7 @@ Para executar só a deteção facial, consultar o [guia de deteção](docs/modul
 Todos os comandos a partir da raiz do projeto:
 
 ```bash
-python -m train.prepare_data          # alinhar datasets + criar splits
+python -m train.prepare_data          # realinhar datasets com SCRFD + ArcFace (data/aligned/)
 python -m train.train_age_gender
 python -m train.train_expression
 python -m app.main                    # aplicação

@@ -59,3 +59,26 @@ class AlignmentTests(unittest.TestCase):
         self.assertEqual(align_faces(image, []), [])
         with self.assertRaises(ValueError):
             align_face(image, TEMPLATE, 128)
+
+    def test_retry_pad_for_tight_crops(self):
+        image = np.full((112, 112, 3), 80, dtype=np.uint8)
+
+        class PaddingOnlyDetector:
+            """Simula o SCRFD a falhar quando a face ocupa a imagem toda."""
+            def detect(self, frame):
+                if frame.shape[0] == 112:
+                    return []
+                m = (frame.shape[0] - 112) // 2
+                return [Detection(np.array([m, m, m + 112, m + 112]), 0.9, TEMPLATE + m)]
+
+        detector = PaddingOnlyDetector()
+        self.assertIsNone(detect_and_align(image, 112, detector=detector))
+        face = detect_and_align(image, 112, detector=detector, retry_pad=0.5)
+        self.assertEqual(face.crop.shape, (112, 112, 3))
+        np.testing.assert_allclose(face.detection.landmarks, TEMPLATE)
+        np.testing.assert_array_equal(face.detection.bbox, [0, 0, 112, 112])
+        np.testing.assert_array_equal(face.crop, align_face(image, TEMPLATE, 112))
+        first = detect_and_align(image, 112, detector=detector, retry_pad=0.5, pad_first=True)
+        np.testing.assert_array_equal(first.crop, face.crop)
+        with self.assertRaises(ValueError):
+            detect_and_align(image, 112, detector=detector, pad_first=True)
