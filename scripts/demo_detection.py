@@ -34,6 +34,7 @@ def main():
                     raise SystemExit(f"Não foi possível ler um frame da fonte: {source}")
                 break
             first_frame = False
+            frame = cv2.flip(frame, 1)
             detections = detector.detect(frame)
             for detection in detections:
                 draw_detection(frame, detection)
