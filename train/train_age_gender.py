@@ -4,7 +4,7 @@ Correr: python -m train.train_age_gender
 Saída:  models/age_gender.pt
 
 TODO:
-1. Dataset a partir de data/splits/utkface.csv + data/aligned/utkface
+1. Dataset a partir de data/splits/utkface.csv (coluna processed_112; linhas vazias = sem face, ignorar)
 2. Para cada batch: backbone(crops)["layer3"] → AgeGenderHead
 3. Loss = L1(idade) + CrossEntropy(género)
 4. Early stopping pelo MAE no split de validação

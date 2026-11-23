@@ -4,7 +4,7 @@ Correr: python -m train.train_expression
 Saída:  models/expression.pt
 
 TODO:
-1. Dataset a partir de data/splits/affectnet.csv + data/aligned/affectnet
+1. Dataset a partir de data/splits/affectnet.csv (coluna processed_112; linhas vazias = sem face, ignorar)
    (só as 7 classes de app/heads.py: retirar "contempt")
 2. Para cada batch: backbone(crops)["layer3"] → ExpressionHead
 3. Loss = CrossEntropy com pesos por classe (o AffectNet é muito desequilibrado)

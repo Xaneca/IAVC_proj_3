@@ -1,8 +1,9 @@
 """ 
 - Extract labels
 - Check outliers - images wrongly labeled
-- Split data into train, val and test: 70 / 15 / 15
-- Data statistics: age histograms, gender distribution -> saves in docs/figures
+- Split data into train, val and test: 70 / 15 / 15 -> data/splits/utkface.csv
+  (path, age, gender, age_bin, age_class, split)
+- Data statistics: age histograms, gender distribution -> saves in docs/figs/utkface
 """
 
 from logging import config
@@ -17,7 +18,9 @@ matplotlib.use("Agg")  # save figures without opening windows
 import matplotlib.pyplot as plt
 
 DATA_DIR = None
-FIGURES_DIR = Path(__file__).resolve().parent / "../../docs/figures/utkface"
+REPO = Path(__file__).resolve().parents[2]
+FIGURES_DIR = REPO / "docs/figs/utkface"
+SPLITS_CSV = REPO / "data/splits/utkface.csv"
 
 # Figure style
 GENDER_NAMES = {0: "Masculino", 1: "Feminino"}
@@ -61,11 +64,11 @@ def get_labels(images_path):
                 # Extract age, gender, and ethnicity from the filename
                 filename = entry.name
                 age, gender = filename.split("_")[:2]
-                labels.append({"filename": filename, "age": int(age), "gender": int(gender)})
+                labels.append({"path": filename, "age": int(age), "gender": int(gender)})
     labels = pd.DataFrame(labels)
 
     # Sort numerically by age (scandir returns alphabetical order: 1, 10, 100, 101, ...)
-    labels = labels.sort_values(["age", "gender", "filename"]).reset_index(drop=True)
+    labels = labels.sort_values(["age", "gender", "path"]).reset_index(drop=True)
 
     # Age discretization: [0-5), [5-10), then 10-year bins up to 80, and 80+
     age_bins = [0, 5] + list(np.arange(10, 90, 10)) + [np.inf]
@@ -74,12 +77,7 @@ def get_labels(images_path):
     labels["age_bin"] = pd.cut(labels["age"], bins=age_bins, labels=age_bin_names, right=False)
     labels["age_class"] = labels["age_bin"].cat.codes
 
-    # save in CSV
-    labels.to_csv(Path(DATA_DIR).parent / "all_labels.csv", index=False)
-
-    labels_df = pd.DataFrame(labels)
-
-    return labels_df
+    return labels
 
 def data_split(labels_df, test_size=0.15, val_size=0.15, random_state=42):
 
@@ -90,10 +88,15 @@ def data_split(labels_df, test_size=0.15, val_size=0.15, random_state=42):
     train_df, temp_df = train_test_split(labels_df, test_size=first_split_size, random_state=42, stratify=labels_df[["age_class", "gender"]])
     val_df, test_df = train_test_split(temp_df, test_size=second_split_size, random_state=42, stratify=temp_df[["age_class", "gender"]])
 
-    # Save the splits to CSV files
-    train_df.to_csv(Path(DATA_DIR).parent / "train_labels.csv", index=False)
-    val_df.to_csv(Path(DATA_DIR).parent / "val_labels.csv", index=False)
-    test_df.to_csv(Path(DATA_DIR).parent / "test_labels.csv", index=False)
+    # One CSV with a split column (same format as affectnet.csv / btfer7.csv)
+    splits = pd.concat([train_df.assign(split="train"), val_df.assign(split="val"),
+                        test_df.assign(split="test")])
+    splits = splits.sort_values(["age", "gender", "path"])
+    SPLITS_CSV.parent.mkdir(parents=True, exist_ok=True)
+    splits.to_csv(SPLITS_CSV, index=False)
+    print(f"Saved {SPLITS_CSV} ({len(splits)} images: "
+          + ", ".join(f"{k}={v}" for k, v in splits["split"].value_counts().items()) + ")")
+    return splits
 
 #### FIGURES #####
 

@@ -18,13 +18,13 @@ A entrada é BGR. A aplicação envia as faces analisáveis num único lote e ma
 
 ## 5. Parâmetros
 
-Crops de 112×112 e 224×224, caixa mínima de 40 px por lado, confiança mínima de 0,5 e desvio lateral máximo do nariz de 0,25 da distância interocular. No `train.prepare_data`, `retry_pad=0.5` (margem de metade do lado em cada borda).
+Crops de 112×112 e 224×224, caixa mínima de 40 px por lado, confiança mínima de 0,5 e desvio lateral máximo do nariz de 0,25 da distância interocular. No `scripts.data.preprocess_faces`, `retry_pad=0.5` (margem de metade do lado em cada borda).
 
 ## 6. Resultados
 
 Testes confirmaram dimensões, posição dos landmarks, filtragem e seleção offline. Com SCRFD real, duas faces seguiram num lote e o crop offline coincidiu píxel a píxel com o da aplicação. [Grelha](../figs/alinhamento.png)
 
-Numa amostra de 300 imagens por dataset, sem margem o SCRFD não detetou nenhuma face. Com `retry_pad=0.5`, ficaram alinhadas 99,0% das imagens do UTKFace e 97,3% das do AffectNet. As falhas ficam registadas em `data/aligned/<dataset>/report.csv`.
+Numa amostra de 300 imagens por dataset, sem margem o SCRFD não detetou nenhuma face. Com `retry_pad=0.5`, ficaram alinhadas 99,0% das imagens do UTKFace e 97,3% das do AffectNet. As imagens sem face são eliminadas e ficam listadas em `data/processed/<dataset>_<size>/removed.csv`.
 
 ## 7. Limitações e ética
 
@@ -34,4 +34,4 @@ O desvio do nariz é uma estimativa de pose. A grelha mostra inclinações no pl
 
 Executar `python -m unittest discover -s tests -p test_align.py -v`. Para gerar a grelha, executar `python -m scripts.demo_alignment caminho/astronaut.png docs/figs/alinhamento.png`.
 
-A API comunicada ao André é `detect_and_align(image, size, pick="largest")`. Devolve a maior face analisável ou `None` e aceita um detetor existente via `detector=`. Para realinhar os datasets, executar `python -m train.prepare_data` (opções `--size 224` e `--datasets utkface affectnet`).
+A API comunicada ao André é `detect_and_align(image, size, pick="largest")`. Devolve a maior face analisável ou `None` e aceita um detetor existente via `detector=`. Para realinhar os datasets, executar `python -m scripts.data.preprocess_faces --dataset utkface` (opções `--size 224` e `--dataset affectnet|btfer7`).
