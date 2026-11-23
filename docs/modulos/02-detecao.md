@@ -37,8 +37,26 @@ A medição cobre latência preliminar. A estabilidade com várias pessoas na we
 
 ## 8. Como reproduzir
 
+**Instalar e descarregar os pesos.** A partir da raiz do projeto, com o ambiente Python ativo:
+
 ```bash
+python -m pip install -r requirements.txt
 python -m scripts.download_detection_models
+```
+
+O script coloca `det_10g.onnx` e `det_500m.onnx` em `models/`. A demo usa o modelo definido em `detector.model_path` no `config.yaml`. Para experimentar o modelo leve, definir esse caminho como `models/det_500m.onnx`.
+
+**Correr a demo.** Usar a webcam de índice 0 ou passar o caminho para um vídeo:
+
+```bash
 python -m scripts.demo_detection --source 0
-python -m eval.eval_detection caminho/imagem.jpg
+python -m scripts.demo_detection --source "caminho/video.mp4"
+```
+
+A janela mostra caixas, confiança, cinco landmarks, contagem de faces e FPS. Carregar em `q` ou `Esc` para sair.
+
+**Medir a latência.** Passar uma ou mais imagens locais. Por omissão, o script faz cinco iterações de aquecimento e 30 medições por configuração. O CSV inclui média, mediana, P95 e provider para cada combinação de modelo e resolução.
+
+```bash
+python -m eval.eval_detection "caminho/imagem.jpg" --output results/detection/timings_local.csv
 ```

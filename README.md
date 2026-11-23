@@ -49,6 +49,8 @@ Colocar em `data/raw/`: WIDER Face, UTKFace, AffectNet, BTFER (links no enunciad
 
 ## Como correr
 
+Para executar só a deteção facial, consultar o [guia de deteção](docs/modulos/02-detecao.md#8-como-reproduzir).
+
 Todos os comandos a partir da raiz do projeto:
 
 ```bash

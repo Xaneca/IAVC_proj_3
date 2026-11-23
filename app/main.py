@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import yaml
 
-from app.align import align
+from app.align import align_faces, detect_and_align
 from app.backbone import SharedBackbone
 from app.detector import Detection, FaceDetector
 from app.gallery import Gallery
@@ -29,10 +29,13 @@ def load_head(head, path, device):
 def analyse(frame, cfg, detector, backbone, age_gender, expression, gallery, modules):
     detections = detector.detect(frame)
     results = [FaceResult(d) for d in detections]
-    if not detections:
+    crops = align_faces(frame, detections)
+    visible = [(result, face.crop) for result, face in zip(results, crops, strict=True)
+               if face.analysable]
+    if not visible:
         return results
 
-    out = backbone([align(frame, d.landmarks) for d in detections])
+    out = backbone([crop for _, crop in visible])
     min_conf = cfg["heads"]["min_confidence"]
 
     with torch.no_grad():
@@ -42,7 +45,7 @@ def analyse(frame, cfg, detector, backbone, age_gender, expression, gallery, mod
         if modules["expression"]:
             e_probs = expression(out["layer3"]).softmax(1)
 
-    for i, r in enumerate(results):
+    for i, (r, _) in enumerate(visible):
         if modules["age_gender"]:
             conf, idx = g_probs[i].max(0)
             gender = GENDERS[idx] if conf >= min_conf else "?"
@@ -67,11 +70,10 @@ def enrol(cap, detector, backbone, gallery, n_frames):
         ok, frame = cap.read()
         if not ok:
             break
-        dets = detector.detect(frame)
-        if not dets:
+        face = detect_and_align(frame, 112, detector=detector)
+        if face is None:
             continue
-        d = max(dets, key=lambda d: (d.bbox[2] - d.bbox[0]) * (d.bbox[3] - d.bbox[1]))
-        embeddings.append(backbone([align(frame, d.landmarks)])["embedding"][0].cpu().numpy())
+        embeddings.append(backbone([face.crop])["embedding"][0].cpu().numpy())
     if embeddings:
         gallery.enrol(name, np.stack(embeddings))
         print(f"Registado: {name} ({len(embeddings)} frames)")

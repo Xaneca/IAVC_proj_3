@@ -30,6 +30,17 @@ A auditoria dos ZIPs detetou 659 grupos de duplicados e conservou no máximo uma
 
 ## 8. Como reproduzir
 
+Descarregar os dois ZIPs e guardá-los em `data/downloads/`. Extrair o conteúdo do AffectNet para `data/AffectNET/`, preservando a pasta `AffectNetCustom/`, e o do BTFER7 para `data/BTFER7/`, preservando `Batch_Ready 7/`. [AffectNet Aligned](https://www.kaggle.com/datasets/yakhyokhuja/affectnetaligned) · [BTFER7](https://www.kaggle.com/datasets/gipinze/btfer7)
+
+Na raiz do projeto, executar:
+
+```bash
+python -m pip install -r requirements-datasets.txt
+python -m scripts.data.prepare_expression_datasets setup-local
+```
+
+Como no UTKFace, os CSVs ficam ao lado da pasta das imagens. O AffectNet recebe `all_labels.csv`, `train_labels.csv`, `val_labels.csv` e `test_labels.csv`. O BTFER7 recebe apenas `all_labels.csv` e `test_labels.csv`. O comando reutiliza os splits versionados.
+
 Executar `python -m unittest discover -s tests -p test_expression_datasets.py -v`. Para a auditoria, executar `python -m scripts.data.prepare_expression_datasets preliminary --affectnet-zip data/downloads/affectnetaligned.zip --btfer7-zip data/downloads/btfer7.zip --clean`.
 
 Os CSVs finais e a auditoria estão em `data/splits`. A auditoria regista os hashes dos ZIPs, o protocolo local e a seed usados na atribuição determinística das partições.
