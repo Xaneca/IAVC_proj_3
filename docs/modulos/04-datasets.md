@@ -44,7 +44,7 @@
 
 ## 8. Como reproduzir
 
-**Idade e género.** Descarregar o UTKFace cropped e extrair as imagens para `data/UTKFace/UTKFace/`. Descarregar os pesos do detetor com `python -m scripts.download_detection_models`. Na raiz do projeto, executar:
+**Idade e género.** Descarregar o UTKFace cropped e extrair as imagens para `data/UTKFace/UTKFace/`. Descarregar os pesos do detetor e do ArcFace com `python -m scripts.download_models`. Na raiz do projeto, executar:
 
 ```bash
 python -m scripts.data.prepare_utkface                      # data/splits/utkface.csv + figuras em docs/figs/utkface/

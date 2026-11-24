@@ -26,7 +26,7 @@ class SCRFDDetector(Detector):
     def __init__(self, model_path: str, input_size: int = 640,
                  min_score: float = 0.5, nms_threshold: float = 0.4):
         if not Path(model_path).is_file():
-            raise FileNotFoundError(f"Pesos em falta: {model_path}. Executa python -m scripts.download_detection_models.")
+            raise FileNotFoundError(f"Pesos em falta: {model_path}. Executa python -m scripts.download_models.")
         if input_size <= 0 or input_size % 32:
             raise ValueError("input_size tem de ser um múltiplo positivo de 32")
         if not (0 <= min_score <= 1 and 0 <= nms_threshold <= 1):

@@ -41,7 +41,7 @@ A medição cobre latência preliminar. A estabilidade com várias pessoas na we
 
 ```bash
 python -m pip install -r requirements.txt
-python -m scripts.download_detection_models
+python -m scripts.download_models
 ```
 
 O script coloca `det_10g.onnx` e `det_500m.onnx` em `models/`. A demo usa o modelo definido em `detector.model_path` no `config.yaml`. Para experimentar o modelo leve, definir esse caminho como `models/det_500m.onnx`.

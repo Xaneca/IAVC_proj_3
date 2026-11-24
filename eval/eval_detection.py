@@ -10,7 +10,7 @@ import numpy as np
 import yaml
 
 from app.detector import SCRFDDetector
-from scripts.download_detection_models import MODELS
+from scripts.download_models import DETECTORS
 
 
 def main():
@@ -31,7 +31,7 @@ def main():
         frames.append(frame)
     config = yaml.safe_load(args.config.read_text(encoding="utf-8"))["detector"]
     rows = []
-    for name in MODELS.values():
+    for name in DETECTORS.values():
         for size in (320, 640):
             detector = SCRFDDetector(
                 str(Path(config["model_path"]).parent / name),
