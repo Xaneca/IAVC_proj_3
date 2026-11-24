@@ -7,7 +7,7 @@ detector:
   nms_threshold: 0.4
 
 backbone:
-  weights: models/arcface_r50.pth
+  weights: models/arcface_r50_l3.onnx   # gerado por python -m scripts.export_backbone
   device: cpu                  # ou cuda
 
 heads:
