@@ -23,5 +23,6 @@ The labels of each face image is embedded in the file name, formated like
     - [0-4], [5-9], [10-19], [20-30], ... [80+]
 - Train/Validation/Test: 70/15/15 - stratified per age and gender
 - docs/figures have data statistics in distribution
+- Images resized from 200x200 to 112x112 (no detection/alignment) -> data/processed/utkface_112
 - In the future: resolve wrongly labeled data
     - image of an eye not a person, adults mislabeeled as children, ...

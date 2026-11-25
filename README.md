@@ -55,7 +55,7 @@ Todos os comandos a partir da raiz do projeto:
 
 ```bash
 python -m scripts.data.prepare_utkface              # splits do UTKFace (data/splits/utkface.csv)
-python -m scripts.data.preprocess_faces --dataset utkface   # crops alinhados (data/processed/)
+python -m scripts.data.preprocess_faces --dataset utkface   # crops 112×112 (data/processed/)
 python -m train.train_age_gender
 python -m train.train_expression
 python -m app.main                    # aplicação

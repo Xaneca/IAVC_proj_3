@@ -3,14 +3,13 @@ from dataclasses import dataclass, field
 
 import cv2
 import numpy as np
-import torch
 import yaml
 
 from app.align import align_faces, detect_and_align
 from app.backbone import SharedBackbone
 from app.detector import Detection, FaceDetector
 from app.gallery import Gallery
-from app.heads import EXPRESSIONS, GENDERS, AgeGenderHead, ExpressionHead, age_to_range
+from app.heads import EXPRESSIONS, GENDERS, age_to_range
 from app.ui import FPSCounter, draw
 
 
@@ -21,12 +20,7 @@ class FaceResult:
     labels: list[str] = field(default_factory=list)   # idade, género, expressão
 
 
-def load_head(head, path, device):
-    head.load_state_dict(torch.load(path, map_location=device))
-    return head.eval().to(device)
-
-
-def analyse(frame, cfg, detector, backbone, age_gender, expression, gallery, modules):
+def analyse(frame, cfg, detector, backbone, gallery, modules):
     detections = detector.detect(frame)
     results = [FaceResult(d) for d in detections]
     crops = align_faces(frame, detections)
@@ -35,27 +29,22 @@ def analyse(frame, cfg, detector, backbone, age_gender, expression, gallery, mod
     if not visible:
         return results
 
-    out = backbone([crop for _, crop in visible])
+    attributes = modules["age_gender"] or modules["expression"]
+    out = backbone([crop for _, crop in visible], identity=modules["identity"],
+                   attributes=attributes)
     min_conf = cfg["heads"]["min_confidence"]
 
-    with torch.no_grad():
-        if modules["age_gender"]:
-            ages, g_logits = age_gender(out["layer3"])
-            g_probs = g_logits.softmax(1)
-        if modules["expression"]:
-            e_probs = expression(out["layer3"]).softmax(1)
-
     for i, (r, _) in enumerate(visible):
-        if modules["age_gender"]:
-            conf, idx = g_probs[i].max(0)
+        if modules["age_gender"] and "age" in out:
+            conf, idx = out["gender"][i].max(0)
             gender = GENDERS[idx] if conf >= min_conf else "?"
-            r.labels.append(f"~{age_to_range(ages[i].item())} | {gender}")
-        if modules["expression"]:
-            conf, idx = e_probs[i].max(0)
+            r.labels.append(f"{age_to_range(out['age'][i].item())} | {gender}")
+        if modules["expression"] and "expression" in out:
+            conf, idx = out["expression"][i].max(0)
             label = EXPRESSIONS[idx] if conf >= min_conf else "?"
             r.labels.append(f"{label} ({conf:.2f})")
         if modules["identity"]:
-            name, score = gallery.match(out["embedding"][i].cpu().numpy())
+            name, score = gallery.match(out["embedding"][i].numpy())
             r.identity = f"{name} ({score:.2f})"
     return results
 
@@ -70,10 +59,11 @@ def enrol(cap, detector, backbone, gallery, n_frames):
         ok, frame = cap.read()
         if not ok:
             break
+        frame = cv2.flip(frame, 1)
         face = detect_and_align(frame, 112, detector=detector)
         if face is None:
             continue
-        embeddings.append(backbone([face.crop])["embedding"][0].cpu().numpy())
+        embeddings.append(backbone([face.crop], attributes=False)["embedding"][0].numpy())
     if embeddings:
         gallery.enrol(name, np.stack(embeddings))
         print(f"Registado: {name} ({len(embeddings)} frames)")
@@ -84,9 +74,7 @@ def main(config_path: str = "config.yaml"):
     device = cfg["backbone"]["device"]
 
     detector = FaceDetector(**cfg["detector"])
-    backbone = SharedBackbone(cfg["backbone"]["weights"], device)
-    age_gender = load_head(AgeGenderHead(), cfg["heads"]["age_gender"], device)
-    expression = load_head(ExpressionHead(), cfg["heads"]["expression"], device)
+    backbone = SharedBackbone(cfg["backbone"]["weights"], cfg["heads"]["weights"], device)
     gallery = Gallery(cfg["gallery"]["dir"], cfg["gallery"]["threshold"])
     modules = dict(cfg["modules"])
 
@@ -97,7 +85,8 @@ def main(config_path: str = "config.yaml"):
         ok, frame = cap.read()
         if not ok:
             break
-        results = analyse(frame, cfg, detector, backbone, age_gender, expression, gallery, modules)
+        frame = cv2.flip(frame, 1)  # espelha antes de detetar: coords já no referencial mostrado
+        results = analyse(frame, cfg, detector, backbone, gallery, modules)
         draw(frame, results, fps.tick(), modules)
         cv2.imshow("Facial Analysis", frame)
 
